@@ -1,0 +1,12 @@
+service: tejas-ml-service
+app: tejas_ai
+org: tejas_ai
+
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: python3.8
+functions:
+  hello:
+    handler: handler.hello
