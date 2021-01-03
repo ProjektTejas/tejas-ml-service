@@ -20,6 +20,6 @@ class ZipDataset(ImageFolder):
         super(ZipDataset, self).__init__(root=root, *args, **kwargs)
 
     def extract_zip(self, root: str) -> None:
-        print("extracting dataset zip file")
+        logger.info("extracting dataset zip file")
         zipf: ZipFile = ZipFile(self.zip_file, "r")
         zipf.extractall(root)

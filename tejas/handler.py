@@ -67,6 +67,7 @@ def train_model(event, context):
     traced_model.save(saved_model_path)
 
     logger.info(f"Training Completed for {task_id}")
+    logger.info(f"Model for task_id: {task_id} and dataset: {dataset_zip} saved in {saved_model_path}")
 
     # update the state and meta in db
     tasks_table.update_item(

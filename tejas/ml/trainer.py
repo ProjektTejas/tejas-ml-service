@@ -25,8 +25,9 @@ class LambdaTrainer:
 
         self.model = ModelClass(num_classes=num_classes)
 
+        # set num_workers=0 to disable multiprocessing
         self.train_loader = DataLoader(
-            self.dataset, batch_size=128, shuffle=True, num_workers=4, pin_memory=True
+            self.dataset, batch_size=128, shuffle=True, num_workers=0, pin_memory=False
         )
 
         self.optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)

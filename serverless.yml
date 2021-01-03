@@ -26,6 +26,7 @@ provider:
 functions:
   train_model:
     handler: tejas.handler.train_model
+    memorySize: 6144
     fileSystemConfig:
       localMountPath: /mnt/tejas-fs
       arn: arn:aws:elasticfilesystem:ap-south-1:668527606260:access-point/fsap-0ed6c22fc0aa6a295
