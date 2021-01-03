@@ -1,12 +1,67 @@
 service: tejas-ml-service
-app: tejas_ai
-org: tejas_ai
+org: tejasai
 
 frameworkVersion: '2'
 
 provider:
   name: aws
   runtime: python3.8
+  stage: dev
+  region: ap-south-1
+  timeout: 900
+  environment:
+    PRODUCTION: True
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:DeleteItem
+        - dynamodb:DescribeTable
+      Resource: "*"
+
 functions:
-  hello:
-    handler: handler.hello
+  train_model:
+    handler: handler.train_model
+    fileSystemConfig:
+      localMountPath: /mnt/tejas-fs
+      arn: arn:aws:elasticfilesystem:ap-south-1:668527606260:access-point/fsap-0ed6c22fc0aa6a295
+    vpc:
+      securityGroupIds:
+        - sg-07c194e6b1aa88b25
+      subnetIds:
+        - subnet-64b8f40c
+        - subnet-0db20f41
+        - subnet-2a3fcf51
+    environment:
+      TASKS_TABLE: ${self:custom.tasksTableName}
+      TEJAS_LAMBDA: true
+      TEJAS_LIBS_PATH: /mnt/tejas-fs/tejas-libs
+      TEJAS_MODELS_PATH: /mnt/tejas-fs/tejas-models
+      TEJAS_DATASETS_PATH: /mnt/tejas-fs/tejas-datasets
+
+custom:
+  tasksTableName: tejastasks
+
+resources:
+  Resources:
+    tejasTasksTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tasksTableName}
+        AttributeDefinitions:
+          - AttributeName: taskId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: taskId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+package:
+  exclude:
+    - requirements/
+    - requirements/**

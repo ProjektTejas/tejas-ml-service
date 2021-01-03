@@ -6,6 +6,8 @@ from pathlib import Path
 
 from torchvision.datasets import ImageFolder
 
+from typing import Any
+
 
 class ZipDataset(ImageFolder):
     def __init__(self, zip_file: str, **kwargs: Any) -> None:

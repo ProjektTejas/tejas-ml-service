@@ -1,3 +1,5 @@
+from torch.jit import RecursiveScriptModule, ScriptModule
+
 from .models import MobileNetV2
 from .dataset import ZipDataset
 
@@ -8,17 +10,16 @@ import torch.optim as optim
 import torch.nn as nn
 
 from torch.utils.data import DataLoader
+from loguru import logger
 
-from typing import Callable, Dict, Any, Tuple
+from typing import Callable, Dict, Any, Tuple, List
 
 
 class LambdaTrainer:
     def __init__(self, dataset_zip: str, model_name: str) -> None:
-        ModelClass, transforms = get_model_and_transforms(model_name=model_name)
+        ModelClass, transform = get_model_and_transform(model_name=model_name)
 
-        self.dataset: ZipDataset = ZipDataset(
-            zip_file=dataset_zip, transforms=transforms
-        )
+        self.dataset: ZipDataset = ZipDataset(zip_file=dataset_zip, transform=transform)
 
         num_classes: int = len(self.dataset.classes)
 
@@ -35,15 +36,22 @@ class LambdaTrainer:
     def train(self, n_epochs: int) -> Tuple[Any, List[str]]:
         train_stats: List[str] = []
         for epoch in range(n_epochs):
-            results = self.train_epoch()
+            results = self.train_epoch(epoch)
 
             train_stats.append(
-                f"Epoch: {epoch}/{n_epochs}, Train Acc: {results['acc']}, Train Loss: {results['loss']}"
+                f"Epoch: {epoch+1}/{n_epochs}, Train Acc: {results['acc']}, Train Loss: {results['loss']}"
             )
 
-        return self.model, train_stats
+        logger.info(f"Finished training {n_epochs} Epochs")
 
-    def train_epoch(self) -> Dict[str, Any]:
+        return self.traced_model, train_stats
+
+    @property
+    def traced_model(self) -> ScriptModule:
+        traced_model = torch.jit.trace(self.model, (torch.randn(1, 3, 224, 224),))
+        return traced_model
+
+    def train_epoch(self, epoch_num: int) -> Dict[str, Any]:
         self.model.train()
 
         running_loss = 0.0
@@ -58,7 +66,7 @@ class LambdaTrainer:
             _, preds = torch.max(outputs, 1)
 
             loss.backward()
-            optimizer.step()
+            self.optimizer.step()
 
             running_loss += loss.item() * inputs.size(0)
             running_corrects += torch.sum(preds == labels.data)
@@ -69,10 +77,10 @@ class LambdaTrainer:
         return {"loss": epoch_loss, "acc": epoch_acc}
 
 
-def get_model_and_transforms(model_name: str) -> Tuple[Callable, T.Compose]:
+def get_model_and_transform(model_name: str) -> Tuple[Callable, T.Compose]:
     if model_name == "mobilenet_v2":
         model_class: Callable = MobileNetV2
-        transforms: T.Compose = T.Compose(
+        transform: T.Compose = T.Compose(
             [
                 T.Resize((224, 224)),
                 T.ToTensor(),
@@ -80,4 +88,4 @@ def get_model_and_transforms(model_name: str) -> Tuple[Callable, T.Compose]:
             ]
         )
 
-        return model_class, transforms
+        return model_class, transform
