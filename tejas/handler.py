@@ -69,6 +69,8 @@ def train_model(event, context):
     logger.info(f"Training Completed for {task_id}")
     logger.info(f"Model for task_id: {task_id} and dataset: {dataset_zip} saved in {saved_model_path}")
 
+    idx_to_classname: Dict[int, str] = {v: k for k, v in trainer.dataset.class_to_idx.iteritems()}
+
     # update the state and meta in db
     tasks_table.update_item(
         Key={
@@ -79,6 +81,7 @@ def train_model(event, context):
             ":status": TrainerState.COMPLETED.value,
             ":result": {
                 "modelPath": saved_model_path,
+                "idxToClassname": idx_to_classname,
                 "trainingLogs": train_stats
             }
         },

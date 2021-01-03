@@ -49,6 +49,7 @@ class LambdaTrainer:
 
     @property
     def traced_model(self) -> ScriptModule:
+        self.model.eval()
         traced_model = torch.jit.trace(self.model, (torch.randn(1, 3, 224, 224),))
         return traced_model
 
