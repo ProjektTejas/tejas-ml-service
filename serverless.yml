@@ -24,7 +24,7 @@ provider:
 
 functions:
   train_model:
-    handler: handler.train_model
+    handler: tejas.handler.train_model
     fileSystemConfig:
       localMountPath: /mnt/tejas-fs
       arn: arn:aws:elasticfilesystem:ap-south-1:668527606260:access-point/fsap-0ed6c22fc0aa6a295
@@ -40,6 +40,7 @@ functions:
       TEJAS_LAMBDA: true
       TEJAS_LIBS_PATH: /mnt/tejas-fs/tejas-libs
       TEJAS_MODELS_PATH: /mnt/tejas-fs/tejas-models
+      TEJAS_PRETRAINED_PATH: /mnt/tejas-fs/tejas-pretrained
       TEJAS_DATASETS_PATH: /mnt/tejas-fs/tejas-datasets
 
 custom:

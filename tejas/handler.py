@@ -1,32 +1,29 @@
-# this should always be at the top of the root handler
-try:
-    import sys
-    import os
-
-    sys.path.insert(0, os.environ["TEJAS_LIBS_PATH"])
-
-    print("Successfully Imported")
-except Exception as ex:
-    print(f"error: {ex}")
-    raise ex
-
-from typing import Dict, List
-
-from torch.jit import ScriptModule
-
-from core.config import TrainerState
-from db.boto_client import tasks_table
-from ml.trainer import LambdaTrainer
-
-from .core.config import settings
-
-
-import json
-
-from loguru import logger
-
-
 def train_model(event, context):
+    # this should always be at the top of the root handler
+    try:
+        import sys
+        import os
+
+        sys.path.insert(0, os.environ["TEJAS_LIBS_PATH"])
+
+        print("Successfully Imported")
+    except Exception as ex:
+        print(f"error: {ex}")
+        raise ex
+
+    from typing import Dict, List
+
+    from torch.jit import ScriptModule
+
+    from tejas.core.config import TrainerState
+    from tejas.db.boto_client import tasks_table
+    from tejas.ml.trainer import LambdaTrainer
+
+    from tejas.core.config import settings
+
+    import json
+
+    from loguru import logger
 
     logger.info(f"Started Lambda Request: {context.aws_request_id}")
 
@@ -40,7 +37,7 @@ def train_model(event, context):
     new_task = {
         "taskId": task_id,
         "taskArgs": task_args,
-        "taskStatus": TrainerState.INITIALIZING,
+        "taskStatus": TrainerState.INITIALIZING.value,
         "taskResult": "",
     }
     tasks_table.put_item(Item=new_task)
@@ -53,8 +50,9 @@ def train_model(event, context):
         Key={
             "taskId": task_id,
         },
-        AttributeUpdates={
-            "taskStatus": TrainerState.TRAINING
+        UpdateExpression="set taskStatus=:status",
+        ExpressionAttributeValues={
+            ":status": TrainerState.TRAINING.value
         }
     )
 
@@ -75,13 +73,14 @@ def train_model(event, context):
         Key={
             "taskId": task_id,
         },
-        AttributeUpdates={
-            "taskStatus": TrainerState.COMPLETED,
-            "taskResult": {
+        UpdateExpression="set taskStatus=:status, taskResult=:result",
+        ExpressionAttributeValues={
+            ":status": TrainerState.COMPLETED.value,
+            ":result": {
                 "modelPath": saved_model_path,
                 "trainingLogs": train_stats
             }
-        }
+        },
     )
 
     task_return = tasks_table.get_item(
