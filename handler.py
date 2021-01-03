@@ -1,3 +1,15 @@
+# this should always be at the top of the root handler
+try:
+    import sys
+    import os
+
+    sys.path.insert(0, os.environ["TEJAS_LIBS_PATH"])
+
+    print("Successfully Imported")
+except Exception as ex:
+    print(f"error: {ex}")
+    raise ex
+
 from typing import Dict, List
 
 from torch.jit import ScriptModule
@@ -8,14 +20,6 @@ from ml.trainer import LambdaTrainer
 
 from .core.config import settings
 
-try:
-    import sys
-    import os
-
-    sys.path.insert(0, os.environ["TEJAS_LIBS_PATH"])
-except Exception as ex:
-    print(f"error: {ex}")
-    raise ex
 
 import json
 
