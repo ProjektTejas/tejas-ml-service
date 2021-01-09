@@ -40,7 +40,7 @@ def train_model(event, context):
         "taskArgs": task_args,
         "taskStatus": TrainerState.INITIALIZING.value,
         "taskResult": "",
-        "timestamp": str(datetime.now().isoformat())
+        "timestamp": datetime.now().isoformat()
     }
     tasks_table.put_item(Item=new_task)
 
