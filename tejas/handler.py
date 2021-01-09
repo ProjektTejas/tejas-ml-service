@@ -69,7 +69,7 @@ def train_model(event, context):
     logger.info(f"Training Completed for {task_id}")
     logger.info(f"Model for task_id: {task_id} and dataset: {dataset_zip} saved in {saved_model_path}")
 
-    idx_to_classname: Dict[int, str] = {v: k for k, v in trainer.dataset.class_to_idx.iteritems()}
+    idx_to_classname: Dict[int, str] = {v: k for k, v in trainer.dataset.class_to_idx.items()}
 
     # dump the idx_to_classname dict to a json file
     idx_to_classname_path = str(settings.MODELS_PATH / f'{task_id}.json')
