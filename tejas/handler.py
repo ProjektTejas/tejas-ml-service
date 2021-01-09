@@ -22,6 +22,7 @@ def train_model(event, context):
     from tejas.core.config import settings
 
     import json
+    from datetime import datetime
 
     from loguru import logger
 
@@ -39,6 +40,7 @@ def train_model(event, context):
         "taskArgs": task_args,
         "taskStatus": TrainerState.INITIALIZING.value,
         "taskResult": "",
+        "timestamp": str(datetime.now().isoformat())
     }
     tasks_table.put_item(Item=new_task)
 
