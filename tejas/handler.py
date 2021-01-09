@@ -71,6 +71,11 @@ def train_model(event, context):
 
     idx_to_classname: Dict[int, str] = {v: k for k, v in trainer.dataset.class_to_idx.iteritems()}
 
+    # dump the idx_to_classname dict to a json file
+    idx_to_classname_path = str(settings.MODELS_PATH / f'{task_id}.json')
+    with (settings.MODELS_PATH / f'{task_id}.json').open('w') as f:
+        json.dump(idx_to_classname, f)
+
     # update the state and meta in db
     tasks_table.update_item(
         Key={
@@ -81,7 +86,7 @@ def train_model(event, context):
             ":status": TrainerState.COMPLETED.value,
             ":result": {
                 "modelPath": saved_model_path,
-                "idxToClassname": idx_to_classname,
+                "idxToClassnamePath": idx_to_classname_path,
                 "trainingLogs": train_stats
             }
         },
@@ -97,6 +102,9 @@ def train_model(event, context):
         "message": "Model Training Function Completed",
         "task": json.dumps(task_return),
     }
+
+    # for cloudwatch logs and debug
+    logger.info(body)
 
     response = {"statusCode": 200, "body": json.dumps(body)}
 
