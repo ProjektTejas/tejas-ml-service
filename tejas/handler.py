@@ -12,6 +12,7 @@ def train_model(event, context):
         raise ex
 
     from typing import Dict, List
+    from pathlib import Path
 
     from torch.jit import ScriptModule
 
@@ -24,14 +25,37 @@ def train_model(event, context):
     import json
     from datetime import datetime
 
+    import boto3
+
+    s3 = boto3.client('s3')
+
     from loguru import logger
+
+    # we'll only process the first uploaded file (we dont support multiple datasets training parallel) (for now)
+    record = event['Records'][0]
+    bucket = record['s3']['bucket']['name']
+    key = record['s3']['object']['key']
+    response = s3.head_object(Bucket=bucket, Key=key)
+
+    # logger.info(response)
+    #
+    # logger.info(str(event))
+    # logger.info(str(context))
+    #
+    # return {"statusCode": 200}
 
     logger.info(f"Started Lambda Request: {context.aws_request_id}")
 
-    task_id: str = event["taskId"]
-    task_args: Dict[str, str] = event["args"]
+    # download the dataset
+    dataset_zip = str(Path("/tmp") / Path(key))
+    s3.download_file(bucket, key, dataset_zip)
 
-    dataset_zip: str = task_args["datasetZip"]
+    train_meta = response['Metadata']
+
+    task_id: str = train_meta["taskId"]
+    task_args: Dict[str, str] = train_meta["args"]
+
+    # dataset_zip: str = task_args["datasetZip"]
     model_name: str = task_args["modelName"]
 
     # instantiate the task in db

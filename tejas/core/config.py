@@ -18,8 +18,10 @@ class Settings(BaseSettings):
 
     TASKS_TABLE = os.environ["TASKS_TABLE"]
     MODELS_PATH = Path(os.environ["TEJAS_MODELS_PATH"])
-    DATASETS_PATH = Path(os.environ["TEJAS_DATASETS_PATH"])
+    # DATASETS_PATH = Path(os.environ["TEJAS_DATASETS_PATH"])
     PRETRAINED_PATH = Path(os.environ["TEJAS_PRETRAINED_PATH"])
+
+    DATASETS_BUCKET: str = os.environ["TEJAS_DATASETS_BUCKET"]
 
 
 settings = Settings()
