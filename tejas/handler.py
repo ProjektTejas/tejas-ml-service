@@ -51,9 +51,10 @@ def train_model(event, context):
     s3.download_file(bucket, key, dataset_zip)
 
     train_meta = response['Metadata']
+    train_meta_args = json.loads(train_meta['args'])
 
-    task_id: str = train_meta["taskId"]
-    task_args: Dict[str, str] = train_meta["args"]
+    task_id: str = train_meta_args["taskId"]
+    task_args: Dict[str, str] = train_meta_args["args"]
 
     # dataset_zip: str = task_args["datasetZip"]
     model_name: str = task_args["modelName"]
