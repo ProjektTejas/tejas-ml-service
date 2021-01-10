@@ -87,7 +87,7 @@ def train_model(event, context):
 
     traced_model: ScriptModule
     train_stats: List[str]
-    traced_model, train_stats = trainer.train(n_epochs=1)
+    traced_model, train_stats = trainer.train(n_epochs=settings.MAX_EPOCHS)
 
     # trace and save the model
     saved_model_path = str(settings.MODELS_PATH / f"{task_id}.traced.pt")

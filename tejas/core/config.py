@@ -23,5 +23,7 @@ class Settings(BaseSettings):
 
     DATASETS_BUCKET: str = os.environ["TEJAS_DATASETS_BUCKET"]
 
+    MAX_EPOCHS: int = int(os.environ["TEJAS_MAX_EPOCHS"])
+
 
 settings = Settings()
